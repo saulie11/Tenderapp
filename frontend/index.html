@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TenderApp - Intelligent Tender Management</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#4F46E5"/>
+            <path d="M8 10h16M8 16h10M8 22h12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="24" cy="22" r="4" fill="#10B981"/>
+            <path d="M22 22l1.5 1.5L26 20" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>TenderApp</span>
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+      </div>
+      <div class="nav-links">
+        <a href="#" class="nav-link active" data-page="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a href="#" class="nav-link" data-page="tenders">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+          Tenders
+          <span class="badge" id="unreadBadge" style="display:none">0</span>
+        </a>
+        <a href="#" class="nav-link" data-page="documents">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          Documents
+        </a>
+        <a href="#" class="nav-link" data-page="ai-writer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          AI Writer
+        </a>
+        <a href="#" class="nav-link" data-page="pipeline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="12" height="4" rx="1"/><rect x="3" y="17" width="15" height="4" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a href="#" class="nav-link" data-page="sources">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Sources
+        </a>
+      </div>
+      <div class="sidebar-footer">
+        <button class="btn-icon" id="notifBtn" title="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <button class="btn btn-primary" onclick="App.showPage('tenders'); App.openAddTenderModal()">+ Add Tender</button>
+        </div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+            <div class="stat-info"><div class="stat-value" id="statTotal">-</div><div class="stat-label">Total Tenders</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            <div class="stat-info"><div class="stat-value" id="statUnread">-</div><div class="stat-label">Unread / New</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="stat-info"><div class="stat-value" id="statClosing">-</div><div class="stat-label">Closing in 7 Days</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="stat-info"><div class="stat-value" id="statWon">-</div><div class="stat-label">Won</div></div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <h3>Recent Tenders</h3>
+              <a href="#" onclick="App.showPage('tenders')" class="link-btn">View all</a>
+            </div>
+            <div id="recentTenders" class="tender-list-mini"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Recent Notifications</h3>
+              <button onclick="App.markAllNotifRead()" class="link-btn">Mark all read</button>
+            </div>
+            <div id="recentNotifications" class="notif-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TENDERS PAGE -->
+      <div class="page" id="page-tenders">
+        <div class="page-header">
+          <h1>Tenders</h1>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="App.openExtractModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Extract from Text
+            </button>
+            <button class="btn btn-primary" onclick="App.openAddTenderModal()">+ Add Tender</button>
+          </div>
+        </div>
+        <div class="filters-bar">
+          <input type="text" id="tenderSearch" class="search-input" placeholder="Search tenders..." oninput="App.debounceSearch()" />
+          <div class="filter-tabs" id="statusFilter">
+            <button class="filter-tab active" data-status="all">All</button>
+            <button class="filter-tab" data-status="new">New</button>
+            <button class="filter-tab" data-status="reviewing">Reviewing</button>
+            <button class="filter-tab" data-status="bidding">Bidding</button>
+            <button class="filter-tab" data-status="submitted">Submitted</button>
+            <button class="filter-tab" data-status="won">Won</button>
+            <button class="filter-tab" data-status="lost">Lost</button>
+          </div>
+        </div>
+        <div id="tendersList" class="tenders-container"></div>
+        <div id="tendersFooter" class="pagination-bar"></div>
+      </div>
+
+      <!-- DOCUMENTS PAGE -->
+      <div class="page" id="page-documents">
+        <div class="page-header">
+          <h1>Documents</h1>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="App.openUploadModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload
+            </button>
+            <button class="btn btn-primary" onclick="App.openNewDocModal()">+ New Document</button>
+          </div>
+        </div>
+        <div id="documentsList" class="documents-grid"></div>
+      </div>
+
+      <!-- AI WRITER PAGE -->
+      <div class="page" id="page-ai-writer">
+        <div class="page-header">
+          <h1>AI Writer</h1>
+          <div class="header-actions">
+            <select id="writerTenderSelect" class="select-input">
+              <option value="">No tender context</option>
+            </select>
+            <select id="docTypeSelect" class="select-input">
+              <option value="proposal">Bid Proposal</option>
+              <option value="cover_letter">Cover Letter</option>
+              <option value="executive_summary">Executive Summary</option>
+              <option value="methodology">Methodology</option>
+              <option value="company_profile">Company Profile</option>
+              <option value="financial_proposal">Financial Proposal</option>
+              <option value="compliance_statement">Compliance Statement</option>
+            </select>
+          </div>
+        </div>
+        <div class="ai-writer-layout">
+          <div class="chat-panel">
+            <div class="chat-messages" id="chatMessages">
+              <div class="chat-welcome">
+                <div class="chat-welcome-icon">🤖</div>
+                <h3>TenderAI Assistant</h3>
+                <p>I can help you write tender documents, analyze opportunities, and improve your submissions. Ask me anything!</p>
+                <div class="quick-prompts">
+                  <button onclick="App.setPrompt('Write a compelling executive summary for this tender')" class="quick-prompt">Write Executive Summary</button>
+                  <button onclick="App.setPrompt('What are the key requirements I should address in my proposal?')" class="quick-prompt">Analyze Requirements</button>
+                  <button onclick="App.setPrompt('Write a methodology section explaining our approach')" class="quick-prompt">Write Methodology</button>
+                  <button onclick="App.setPrompt('Create a detailed proposal structure I should follow')" class="quick-prompt">Proposal Structure</button>
+                </div>
+              </div>
+            </div>
+            <div class="chat-input-area">
+              <textarea id="chatInput" class="chat-input" placeholder="Ask TenderAI to help write documents, analyze tenders, or answer questions..." rows="3"></textarea>
+              <button class="btn btn-primary btn-send" id="sendBtn" onclick="App.sendChat()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="doc-preview-panel">
+            <div class="doc-preview-header">
+              <h3>Document Preview</h3>
+              <div class="doc-actions">
+                <input type="text" id="docPreviewName" class="small-input" placeholder="Document name..." />
+                <button class="btn btn-sm btn-secondary" onclick="App.saveAIDocument()">Save</button>
+                <button class="btn btn-sm btn-secondary" onclick="App.downloadDoc('docx')">DOCX</button>
+                <button class="btn btn-sm btn-secondary" onclick="App.downloadDoc('pdf')">PDF</button>
+              </div>
+            </div>
+            <div id="docPreviewContent" class="doc-preview-content">
+              <p class="placeholder-text">Generated documents will appear here. Use the AI chat to create content.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PIPELINE PAGE -->
+      <div class="page" id="page-pipeline">
+        <div class="page-header">
+          <h1>Submission Pipeline</h1>
+          <button class="btn btn-primary" onclick="App.openAddSubmissionModal()">+ New Submission</button>
+        </div>
+        <div class="pipeline-board" id="pipelineBoard">
+          <div class="pipeline-col" data-status="draft">
+            <div class="pipeline-col-header draft">
+              <span>Draft</span><span class="col-count" id="count-draft">0</span>
+            </div>
+            <div class="pipeline-cards" id="col-draft"></div>
+          </div>
+          <div class="pipeline-col" data-status="review">
+            <div class="pipeline-col-header review">
+              <span>Under Review</span><span class="col-count" id="count-review">0</span>
+            </div>
+            <div class="pipeline-cards" id="col-review"></div>
+          </div>
+          <div class="pipeline-col" data-status="submitted">
+            <div class="pipeline-col-header submitted">
+              <span>Submitted</span><span class="col-count" id="count-submitted">0</span>
+            </div>
+            <div class="pipeline-cards" id="col-submitted"></div>
+          </div>
+          <div class="pipeline-col" data-status="won">
+            <div class="pipeline-col-header won">
+              <span>Won</span><span class="col-count" id="count-won">0</span>
+            </div>
+            <div class="pipeline-cards" id="col-won"></div>
+          </div>
+          <div class="pipeline-col" data-status="lost">
+            <div class="pipeline-col-header lost">
+              <span>Lost</span><span class="col-count" id="count-lost">0</span>
+            </div>
+            <div class="pipeline-cards" id="col-lost"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOURCES PAGE -->
+      <div class="page" id="page-sources">
+        <div class="page-header">
+          <h1>Tender Sources</h1>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="App.checkAllSources()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.8"/></svg>
+              Check All Now
+            </button>
+            <button class="btn btn-primary" onclick="App.openAddSourceModal()">+ Add Source</button>
+          </div>
+        </div>
+        <p class="page-desc">Configure RSS feeds and websites to automatically monitor for new tenders.</p>
+        <div id="sourcesList" class="sources-list"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODALS -->
+  <div class="modal-overlay" id="modalOverlay" onclick="App.closeModal()"></div>
+
+  <!-- Add/Edit Tender Modal -->
+  <div class="modal" id="tenderModal">
+    <div class="modal-header">
+      <h2 id="tenderModalTitle">Add Tender</h2>
+      <button class="modal-close" onclick="App.closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Title *</label>
+          <input type="text" id="tf-title" class="form-input" placeholder="Tender title" />
+        </div>
+        <div class="form-group">
+          <label>Reference Number</label>
+          <input type="text" id="tf-ref" class="form-input" placeholder="REF-2026-001" />
+        </div>
+        <div class="form-group">
+          <label>Issuing Body</label>
+          <input type="text" id="tf-issuer" class="form-input" placeholder="Organization name" />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" id="tf-category" class="form-input" placeholder="IT, Construction, etc." />
+        </div>
+        <div class="form-group">
+          <label>Value</label>
+          <input type="text" id="tf-value" class="form-input" placeholder="$100,000" />
+        </div>
+        <div class="form-group">
+          <label>Published Date</label>
+          <input type="datetime-local" id="tf-published" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>Closing Date</label>
+          <input type="datetime-local" id="tf-closing" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="tf-status" class="form-input">
+            <option value="new">New</option>
+            <option value="reviewing">Reviewing</option>
+            <option value="bidding">Bidding</option>
+            <option value="submitted">Submitted</option>
+            <option value="won">Won</option>
+            <option value="lost">Lost</option>
+            <option value="ignored">Ignored</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label>Source URL</label>
+          <input type="url" id="tf-url" class="form-input" placeholder="https://..." />
+        </div>
+        <div class="form-group full-width">
+          <label>Description</label>
+          <textarea id="tf-desc" class="form-input" rows="4" placeholder="Tender description..."></textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Notes</label>
+          <textarea id="tf-notes" class="form-input" rows="3" placeholder="Internal notes..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="App.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="App.saveTender()">Save Tender</button>
+    </div>
+  </div>
+
+  <!-- Tender Detail Modal -->
+  <div class="modal modal-large" id="tenderDetailModal">
+    <div class="modal-header">
+      <div>
+        <h2 id="detailTitle">Tender Details</h2>
+        <div id="detailMeta" class="detail-meta"></div>
+      </div>
+      <div class="modal-header-actions">
+        <button class="btn btn-sm btn-secondary" id="detailEditBtn" onclick="App.editCurrentTender()">Edit</button>
+        <button class="btn btn-sm btn-primary" id="detailBidBtn" onclick="App.openAddSubmissionFromDetail()">+ Bid</button>
+        <button class="modal-close" onclick="App.closeModal()">&#10005;</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="detail-tabs">
+        <button class="detail-tab active" data-tab="overview">Overview</button>
+        <button class="detail-tab" data-tab="documents">Documents</button>
+        <button class="detail-tab" data-tab="submissions">Submissions</button>
+        <button class="detail-tab" data-tab="ai">AI Analysis</button>
+      </div>
+      <div class="detail-tab-content active" id="detailTab-overview">
+        <div id="detailOverview"></div>
+      </div>
+      <div class="detail-tab-content" id="detailTab-documents">
+        <div class="tab-actions">
+          <button class="btn btn-sm btn-secondary" onclick="App.openUploadToCurrentTender()">Upload File</button>
+          <button class="btn btn-sm btn-primary" onclick="App.openAIWriteForCurrentTender()">Write with AI</button>
+        </div>
+        <div id="detailDocuments"></div>
+      </div>
+      <div class="detail-tab-content" id="detailTab-submissions">
+        <div class="tab-actions">
+          <button class="btn btn-sm btn-primary" onclick="App.openAddSubmissionFromDetail()">+ New Submission</button>
+        </div>
+        <div id="detailSubmissions"></div>
+      </div>
+      <div class="detail-tab-content" id="detailTab-ai">
+        <div class="tab-actions">
+          <button class="btn btn-sm btn-primary" onclick="App.analyzeTender()">Generate AI Analysis</button>
+        </div>
+        <div id="detailAI" class="ai-analysis-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Editor Modal -->
+  <div class="modal modal-large" id="docEditorModal">
+    <div class="modal-header">
+      <input type="text" id="docEditorName" class="modal-title-input" placeholder="Document name..." />
+      <div class="modal-header-actions">
+        <button class="btn btn-sm btn-secondary" onclick="App.downloadCurrentDoc('docx')">DOCX</button>
+        <button class="btn btn-sm btn-secondary" onclick="App.downloadCurrentDoc('pdf')">PDF</button>
+        <button class="btn btn-sm btn-primary" onclick="App.saveDocEditor()">Save</button>
+        <button class="modal-close" onclick="App.closeModal()">&#10005;</button>
+      </div>
+    </div>
+    <div class="modal-body" style="display:flex;gap:1rem;height:calc(100% - 60px)">
+      <div style="flex:1;display:flex;flex-direction:column;gap:0.5rem">
+        <textarea id="docEditorContent" class="doc-editor" placeholder="Document content (Markdown supported)..."></textarea>
+        <div class="doc-editor-ai">
+          <input type="text" id="docEditorImproveInput" class="form-input" placeholder="Ask AI to improve (e.g. 'make it more formal', 'add pricing section')..." />
+          <button class="btn btn-sm btn-primary" onclick="App.improveDocument()">Improve with AI</button>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--bg-secondary)">
+        <div id="docEditorPreview" class="markdown-preview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div class="modal" id="uploadModal">
+    <div class="modal-header">
+      <h2>Upload Document</h2>
+      <button class="modal-close" onclick="App.closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p>Click to select or drag & drop a file</p>
+        <p class="hint">PDF, DOCX, TXT, MD (max 16MB)</p>
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.md,.rtf" style="display:none" onchange="App.handleFileSelect(this)" />
+      </div>
+      <div id="uploadFileInfo" style="display:none" class="file-info"></div>
+      <div class="form-group">
+        <label>Associate with Tender (optional)</label>
+        <select id="uploadTenderSelect" class="form-input">
+          <option value="">No tender</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Document Type</label>
+        <select id="uploadDocType" class="form-input">
+          <option value="tender_spec">Tender Specification</option>
+          <option value="proposal">Proposal</option>
+          <option value="response">Response</option>
+          <option value="template">Template</option>
+          <option value="general">General</option>
+        </select>
+      </div>
+      <label class="checkbox-label">
+        <input type="checkbox" id="uploadAnalyze" checked />
+        Analyze with AI (extract key information)
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="App.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="App.uploadFile()" id="uploadBtn">Upload & Analyze</button>
+    </div>
+  </div>
+
+  <!-- Source Modal -->
+  <div class="modal" id="sourceModal">
+    <div class="modal-header">
+      <h2 id="sourceModalTitle">Add Source</h2>
+      <button class="modal-close" onclick="App.closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Name *</label>
+        <input type="text" id="sf-name" class="form-input" placeholder="Source name" />
+      </div>
+      <div class="form-group">
+        <label>URL *</label>
+        <input type="url" id="sf-url" class="form-input" placeholder="https://..." />
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="sf-type" class="form-input">
+          <option value="rss">RSS Feed</option>
+          <option value="website">Website</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Keywords (comma-separated)</label>
+        <input type="text" id="sf-keywords" class="form-input" placeholder="IT, consulting, construction" />
+      </div>
+      <div class="form-group">
+        <label>Check Interval (hours)</label>
+        <input type="number" id="sf-interval" class="form-input" value="24" min="1" max="168" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="App.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="App.saveSource()">Save Source</button>
+    </div>
+  </div>
+
+  <!-- Submission Modal -->
+  <div class="modal" id="submissionModal">
+    <div class="modal-header">
+      <h2 id="submissionModalTitle">New Submission</h2>
+      <button class="modal-close" onclick="App.closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" id="subf-title" class="form-input" placeholder="Submission title" />
+      </div>
+      <div class="form-group">
+        <label>Tender *</label>
+        <select id="subf-tender" class="form-input"></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="subf-status" class="form-input">
+          <option value="draft">Draft</option>
+          <option value="review">Under Review</option>
+          <option value="submitted">Submitted</option>
+          <option value="won">Won</option>
+          <option value="lost">Lost</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Bid Value</label>
+        <input type="text" id="subf-value" class="form-input" placeholder="$0" />
+      </div>
+      <div class="form-group">
+        <label>Lead Contact</label>
+        <input type="text" id="subf-lead" class="form-input" placeholder="Name / Email" />
+      </div>
+      <div class="form-group">
+        <label>Team Members</label>
+        <input type="text" id="subf-team" class="form-input" placeholder="Comma-separated names" />
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="subf-notes" class="form-input" rows="3" placeholder="Notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="App.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="App.saveSubmission()">Save Submission</button>
+    </div>
+  </div>
+
+  <!-- Extract from Text Modal -->
+  <div class="modal modal-large" id="extractModal">
+    <div class="modal-header">
+      <h2>Extract Tender from Text</h2>
+      <button class="modal-close" onclick="App.closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint">Paste tender text, email, or notification below. AI will extract key details.</p>
+      <textarea id="extractText" class="form-input" rows="12" placeholder="Paste tender text here..."></textarea>
+      <div id="extractResult" style="display:none" class="extract-result"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="App.closeModal()">Cancel</button>
+      <button class="btn btn-secondary" id="extractBtn" onclick="App.extractTender()">Extract with AI</button>
+      <button class="btn btn-primary" id="saveExtractedBtn" style="display:none" onclick="App.saveExtractedTender()">Save Tender</button>
+    </div>
+  </div>
+
+  <!-- Notifications Panel -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-panel-header">
+      <h3>Notifications</h3>
+      <button onclick="App.markAllNotifRead()" class="link-btn">Mark all read</button>
+    </div>
+    <div id="notifPanelList" class="notif-panel-list"></div>
+  </div>
+  <div class="notif-panel-overlay" id="notifPanelOverlay" onclick="App.closeNotifPanel()"></div>
+
+  <!-- Toast notifications -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
