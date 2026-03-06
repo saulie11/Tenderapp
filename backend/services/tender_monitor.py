@@ -1,39 +1,83 @@
-import feedparser
 import requests
+import xml.etree.ElementTree as ET
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from bs4 import BeautifulSoup
 
 
+def _parse_rss_date(date_str: str):
+    """Parse RSS/Atom date strings."""
+    if not date_str:
+        return None
+    try:
+        return parsedate_to_datetime(date_str).replace(tzinfo=None)
+    except Exception:
+        pass
+    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(date_str.strip(), fmt)
+        except ValueError:
+            continue
+    return None
+
+
 def fetch_rss_tenders(url: str, keywords: list = None) -> list:
-    """Fetch tenders from an RSS feed."""
+    """Fetch tenders from an RSS feed using stdlib XML parser."""
     tenders = []
     try:
-        feed = feedparser.parse(url)
-        for entry in feed.entries:
-            title = entry.get("title", "")
-            description = entry.get("summary", entry.get("description", ""))
-            link = entry.get("link", "")
-            published = entry.get("published_parsed") or entry.get("updated_parsed")
+        headers = {"User-Agent": "TenderBot/1.0 (tender tracking application)"}
+        resp = requests.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+        root = ET.fromstring(resp.content)
 
-            pub_date = None
-            if published:
-                try:
-                    pub_date = datetime(*published[:6])
-                except Exception:
-                    pass
+        # Detect RSS vs Atom
+        ns = {"atom": "http://www.w3.org/2005/Atom"}
+        feed_title = ""
 
-            if keywords:
-                text_to_check = (title + " " + description).lower()
-                if not any(kw.lower() in text_to_check for kw in keywords):
-                    continue
-
-            tenders.append({
-                "title": title,
-                "description": BeautifulSoup(description, "html.parser").get_text()[:500] if description else "",
-                "source_url": link,
-                "published_date": pub_date,
-                "source_name": feed.feed.get("title", url),
-            })
+        # RSS 2.0
+        channel = root.find("channel")
+        if channel is not None:
+            feed_title = (channel.findtext("title") or "").strip()
+            for item in channel.findall("item"):
+                title = (item.findtext("title") or "").strip()
+                description = (item.findtext("description") or "").strip()
+                link = (item.findtext("link") or "").strip()
+                pub_date = _parse_rss_date(item.findtext("pubDate") or "")
+                if keywords:
+                    text = (title + " " + description).lower()
+                    if not any(kw.lower() in text for kw in keywords):
+                        continue
+                tenders.append({
+                    "title": title,
+                    "description": BeautifulSoup(description, "html.parser").get_text()[:500],
+                    "source_url": link,
+                    "published_date": pub_date,
+                    "source_name": feed_title or url,
+                })
+        else:
+            # Atom feed
+            feed_title_el = root.find("atom:title", ns)
+            feed_title = feed_title_el.text.strip() if feed_title_el is not None else ""
+            for entry in root.findall("atom:entry", ns):
+                title_el = entry.find("atom:title", ns)
+                title = title_el.text.strip() if title_el is not None else ""
+                summary_el = entry.find("atom:summary", ns) or entry.find("atom:content", ns)
+                description = summary_el.text.strip() if summary_el is not None else ""
+                link_el = entry.find("atom:link", ns)
+                link = link_el.get("href", "") if link_el is not None else ""
+                date_el = entry.find("atom:published", ns) or entry.find("atom:updated", ns)
+                pub_date = _parse_rss_date(date_el.text if date_el is not None else "")
+                if keywords:
+                    text = (title + " " + description).lower()
+                    if not any(kw.lower() in text for kw in keywords):
+                        continue
+                tenders.append({
+                    "title": title,
+                    "description": BeautifulSoup(description, "html.parser").get_text()[:500],
+                    "source_url": link,
+                    "published_date": pub_date,
+                    "source_name": feed_title or url,
+                })
     except Exception as e:
         print(f"Error fetching RSS from {url}: {e}")
 

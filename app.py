@@ -7,7 +7,7 @@ load_dotenv()
 
 
 def create_app():
-    app = Flask(__name__, static_folder="frontend/dist", static_url_path="")
+    app = Flask(__name__, static_folder="frontend", static_url_path="")
 
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-prod")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///tenderapp.db")
